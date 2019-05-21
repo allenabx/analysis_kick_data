@@ -1,9 +1,5 @@
 11goal.csv is the skill data of 200 circle
 release.py can plot the data
 
+Creating a new branch is quick or simple.
 
-<<<<<<< HEAD
-Creating a new branch is quick & simple.
-=======
-Creating a new branch is quick AND simple.
->>>>>>> new
