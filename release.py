@@ -4,8 +4,7 @@ BEGIN = 300
 END = -1
 FILENAME = '3.csv'
 LIMIT = 0.5
-
-
+0
 
 def get_info(filename):
     with open(filename) as f:
@@ -79,9 +78,9 @@ def refresh_state(now, befor,cnt):
     befor = [float(i) for i in befor]
 
     for i in range(len(now)):
-        if abs(now[i] - befor[i]) < LIMIT: now[i] = befor[i]
+        if abs(now[i] - befor[i]) < LIMIT: pass#now[i] = befor[i]
         else :cnt=cnt +1
-
+    print(cnt)
     return now,cnt
 
 
@@ -96,10 +95,10 @@ def generate_skill(all_info):
     temp_str = "settar  end\n"
     skill_str = skill_str.replace(temp_str, '')
     print(skill_str)
-
+    print(temp_cnt)
 
 if __name__ == '__main__':
 
     head, all_info = get_info(FILENAME)
-    plot(head,all_info,4)
+    plot(head,all_info,9)
     generate_skill(all_info)
