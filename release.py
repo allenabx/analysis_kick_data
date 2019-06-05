@@ -1,10 +1,14 @@
 import matplotlib.pyplot as plt
 
-BEGIN = 300
-END = -1
+# BEGIN = 600
+# END = -400
+# FILENAME = 'walk.csv'
+
+BEGIN =285
+END = -50
 FILENAME = '3.csv'
-LIMIT = 0.5
-0
+
+LIMIT =2
 
 def get_info(filename):
     with open(filename) as f:
@@ -45,8 +49,8 @@ def init_skill(first_info):
         elif i < 20:
             str1 += ("EFF_RL" + str(i - 13) + " " + first_info[i] + " ")
     str1 += " end\n" \
-            "wait 0.02 end\n" \
-            "ENDSTATE\n"
+            "wait 0.06 end\n" \
+            "ENDSTATE\n\n"
     return str1
 
 
@@ -55,20 +59,20 @@ def add_skill(i, e, state):
                                  "STARTSTATE\n"
     str1 += "settar "
     for i in range(len(e)):
-        if abs(float(e[i]) - float(state[i])) < 0.5:
+        if abs(float(e[i]) - float(state[i])) < LIMIT:
             continue
 
         if i < 4:
             str1 += ("EFF_LA" + str(i + 1) + " " + e[i] + " ")
         elif i < 10:
             str1 += ("EFF_LL" + str(i - 3) + " " + e[i] + " ")
-        elif i < 14:
-            str1 += ("EFF_RA" + str(i - 9) + " " + e[i] + " ")
+        elif i < 16:
+            str1 += ("EFF_RL" + str(i - 9) + " " + e[i] + " ")
         elif i < 20:
-            str1 += ("EFF_RL" + str(i - 13) + " " + e[i] + " ")
+            str1 += ("EFF_RA" + str(i - 15) + " " + e[i] + " ")
 
     str1 += " end\n" \
-            "wait 0.02 end\n" \
+            "wait 0.06 end\n" \
             "ENDSTATE\n\n"
     return str1
 
@@ -78,9 +82,9 @@ def refresh_state(now, befor,cnt):
     befor = [float(i) for i in befor]
 
     for i in range(len(now)):
-        if abs(now[i] - befor[i]) < LIMIT: pass#now[i] = befor[i]
+        if abs(now[i] - befor[i]) < LIMIT: now[i] = befor[i]
         else :cnt=cnt +1
-    print(cnt)
+
     return now,cnt
 
 
@@ -94,11 +98,16 @@ def generate_skill(all_info):
     #print(temp_cnt)
     temp_str = "settar  end\n"
     skill_str = skill_str.replace(temp_str, '')
-    print(skill_str)
-    print(temp_cnt)
+    skill_str +="\nENDSKILL\n" \
+                "REFLECTSKILL SKILL_KICK_LEFT_LEG SKILL_KICK_RIGHT_LEG\n"
 
+
+    print(skill_str)
+
+    print(temp_cnt)
 if __name__ == '__main__':
 
     head, all_info = get_info(FILENAME)
-    plot(head,all_info,9)
+    all_info = [all_info[i] for i in range(len(all_info)) if i %3==0]
+    plot(head,all_info,6)
     generate_skill(all_info)
