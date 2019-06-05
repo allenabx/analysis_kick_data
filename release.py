@@ -1,31 +1,26 @@
 import matplotlib.pyplot as plt
 
-# BEGIN = 600
-# END = -400
-# FILENAME = 'walk.csv'
+BEGIN = 0
+END = -70
+FILENAME = 'type2-2.csv'
+CIRCLE_INTERVAL = 1
+LIMIT = 0
+plot_joint = 14
 
-BEGIN =285
-END = -50
-FILENAME = '3.csv'
-
-LIMIT =2
 
 def get_info(filename):
     with open(filename) as f:
         info = f.readlines()
-        head = info[0].strip('\n').split(',')
-        all_info = [i.strip('\n').split(',') for i in info[BEGIN:END]]
-        head = head[2:-1]
+        all_info = [i.strip('\n').split(',')[:][2:] for i in info[BEGIN:END]]
 
-        all_info = [i[2:] for i in all_info]
-
-        return head, all_info
+        return all_info
 
 
-def plot(head, info, index):
-    para = [float(k) for k in [_[:-1][index] for _ in info]]
+def plot(info, index):
+    head = info[0]
+    para = [float(k) for k in [_[:-1][index] for _ in info[1:]]]
+
     plt.plot(para, '.')
-
     plt.title(head[index])
     plt.xlabel('times')
     plt.ylabel('angle')
@@ -34,80 +29,74 @@ def plot(head, info, index):
     plt.show()
 
 
-def init_skill(first_info):
-    str1 = "STARTSKILL SKILL_KICK_LEFT_LEG\n" \
-           "# STATE 0\n" \
-           "STARTSTATE\n"
-    str1 += "settar "
-    for i in range(len(first_info)):
-        if i < 4:
-            str1 += ("EFF_LA" + str(i + 1) + " " + first_info[i] + " ")
-        elif i < 10:
-            str1 += ("EFF_LL" + str(i - 3) + " " + first_info[i] + " ")
-        elif i < 14:
-            str1 += ("EFF_RA" + str(i - 9) + " " + first_info[i] + " ")
-        elif i < 20:
-            str1 += ("EFF_RL" + str(i - 13) + " " + first_info[i] + " ")
-    str1 += " end\n" \
-            "wait 0.06 end\n" \
-            "ENDSTATE\n\n"
-    return str1
-
-
-def add_skill(i, e, state):
-    str1 = "# STATE " + str(i) + "\n" \
+def add_start(i):
+    return "# STATE " + str(i) + "\n" \
                                  "STARTSTATE\n"
-    str1 += "settar "
+
+
+def add_mid(e, state):
+    str1 = "settar "
     for i in range(len(e)):
-        if abs(float(e[i]) - float(state[i])) < LIMIT:
+        if (joint_check(e[i], state[i])):
             continue
+        else:
+            state[i] = e[i]
 
         if i < 4:
             str1 += ("EFF_LA" + str(i + 1) + " " + e[i] + " ")
-        elif i < 10:
+        elif i < 11:
             str1 += ("EFF_LL" + str(i - 3) + " " + e[i] + " ")
-        elif i < 16:
-            str1 += ("EFF_RL" + str(i - 9) + " " + e[i] + " ")
-        elif i < 20:
-            str1 += ("EFF_RA" + str(i - 15) + " " + e[i] + " ")
+        elif i < 18:
+            str1 += ("EFF_RL" + str(i - 10) + " " + e[i] + " ")
+        elif i < 23:
+            str1 += ("EFF_RA" + str(i - 17) + " " + e[i] + " ")
 
-    str1 += " end\n" \
-            "wait 0.06 end\n" \
-            "ENDSTATE\n\n"
     return str1
 
 
-def refresh_state(now, befor,cnt):
-    now = [float(i) for i in now]
-    befor = [float(i) for i in befor]
+def add_end():
+    return " end\n" \
+           "wait " + str(CIRCLE_INTERVAL * 0.02) + " end\n" \
+                                                   "ENDSTATE\n\n"
 
-    for i in range(len(now)):
-        if abs(now[i] - befor[i]) < LIMIT: now[i] = befor[i]
-        else :cnt=cnt +1
 
-    return now,cnt
+def joint_check(now, before):
+    if abs(float(now) - float(before)) < LIMIT:
+        return True
+    else:
+        return False
+
+
+def add_state(i, e, last_state_value):
+    strs = ""
+    strs += add_start(i)
+    strs += add_mid(e, last_state_value)
+    strs += add_end()
+    return strs
 
 
 def generate_skill(all_info):
-    now_state = all_info[0]
-    skill_str = init_skill(now_state)
-    temp_cnt = 0
-    for i, e in enumerate(all_info):
-        skill_str += add_skill(i, e, now_state)
-        now_state ,temp_cnt= refresh_state(e, now_state,temp_cnt)
-    #print(temp_cnt)
+    skill_str = "STARTSKILL SKILL_KICK_LEFT_LEG\n" \
+                "# STATE 0\n" \
+                "STARTSTATE\n"
+
+    last_state_value = len(all_info[0]) * [9999]
+
+    for state_num, state_value in enumerate(all_info):
+        skill_str += add_state(state_num, state_value, last_state_value)
+
+    # print(temp_cnt)
     temp_str = "settar  end\n"
     skill_str = skill_str.replace(temp_str, '')
-    skill_str +="\nENDSKILL\n" \
-                "REFLECTSKILL SKILL_KICK_LEFT_LEG SKILL_KICK_RIGHT_LEG\n"
-
+    skill_str += "\nENDSKILL\n" \
+                 "REFLECTSKILL SKILL_KICK_LEFT_LEG SKILL_KICK_RIGHT_LEG\n"
 
     print(skill_str)
+    # print(temp_cnt)
 
-    print(temp_cnt)
+
 if __name__ == '__main__':
-
-    head, all_info = get_info(FILENAME)
-    all_info = [all_info[i] for i in range(len(all_info)) if i %3==0]
-    plot(head,all_info,6)
-    generate_skill(all_info)
+    all_info = get_info(FILENAME)
+    all_info = [all_info[i] for i in range(len(all_info)) if i % CIRCLE_INTERVAL == 0]
+    plot(all_info, plot_joint)
+    generate_skill(all_info[1:])
