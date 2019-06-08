@@ -1,18 +1,18 @@
 import matplotlib.pyplot as plt
 
-BEGIN =1
-END = -70
+BEGIN =725
+END = -250
 FILENAME = 'type2-2.csv'
 CIRCLE_INTERVAL = 1
-LIMIT = 0
-plot_joint = 14
-
+LIMIT = 0.
+plot_joint =18
+file = 'kick.skl'
 
 def get_info(filename):
     with open(filename) as f:
         info = f.readlines()
         all_info = [i.strip('\n').split(',')[:][2:-1] for i in info[0:END]]
-        all_info = all_info[0:1]+all_info[BEGIN:END]
+        all_info = all_info[0:1]+all_info[BEGIN:]
 
 
         return all_info
@@ -45,13 +45,13 @@ def add_mid(e, state):
             state[i] = e[i]
 
         if i < 4:
-            str1 += ("EFF_LA" + str(i + 1) + " " + e[i] + " ")
+            str1 += ("EFF_LA" + str(i + 1) + " " + str(e[i]) + " ")
         elif i < 11:
-            str1 += ("EFF_LL" + str(i - 3) + " " + e[i] + " ")
+            str1 += ("EFF_LL" + str(i - 3) + " " + str(e[i]) + " ")
         elif i < 18:
-            str1 += ("EFF_RL" + str(i - 10) + " " + e[i] + " ")
+            str1 += ("EFF_RL" + str(i - 10) + " " + str(e[i]) + " ")
         elif i < 23:
-            str1 += ("EFF_RA" + str(i - 17) + " " + e[i] + " ")
+            str1 += ("EFF_RA" + str(i - 17) + " " + str(e[i]) + " ")
 
     return str1
 
@@ -77,12 +77,20 @@ def add_state(i, e, last_state_value):
     strs += add_end()
     return strs
 
+def str2float(strs):
+    temp = []
+    for i in strs:
+        temp_line = []
+        for j in i:
+            temp_line.append(float(j))
+        temp.append(temp_line)
+    return temp
 
 def generate_skill(all_info):
     skill_str = "STARTSKILL SKILL_KICK_LEFT_LEG\n" \
                 "# STATE 0\n" \
                 "STARTSTATE\n"
-
+    all_info = str2float(all_info)
     last_state_value = len(all_info[0]) * [9999]
 
 
@@ -95,13 +103,19 @@ def generate_skill(all_info):
     skill_str += "\nENDSKILL\n" \
                  "REFLECTSKILL SKILL_KICK_LEFT_LEG SKILL_KICK_RIGHT_LEG\n"
 
-    print(skill_str)
+    #print(skill_str)
     # print(temp_cnt)
+    return skill_str
 
+def write2file(filename,strs):
+    file = open(filename, 'w+')
+    file.write(strs)
+    file.close()
 
 if __name__ == '__main__':
     all_info = get_info(FILENAME)
     all_info = [all_info[i] for i in range(len(all_info)) if i % CIRCLE_INTERVAL == 0]
     plot(all_info, plot_joint)
 
-    generate_skill(all_info[1:])
+    strs = generate_skill(all_info[1:])
+    write2file(file,strs)
