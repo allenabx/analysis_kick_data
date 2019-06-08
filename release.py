@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 
-BEGIN = 0
+BEGIN =1
 END = -70
 FILENAME = 'type2-2.csv'
 CIRCLE_INTERVAL = 1
@@ -11,7 +11,9 @@ plot_joint = 14
 def get_info(filename):
     with open(filename) as f:
         info = f.readlines()
-        all_info = [i.strip('\n').split(',')[:][2:] for i in info[BEGIN:END]]
+        all_info = [i.strip('\n').split(',')[:][2:-1] for i in info[0:END]]
+        all_info = all_info[0:1]+all_info[BEGIN:END]
+
 
         return all_info
 
@@ -61,6 +63,7 @@ def add_end():
 
 
 def joint_check(now, before):
+
     if abs(float(now) - float(before)) < LIMIT:
         return True
     else:
@@ -82,6 +85,7 @@ def generate_skill(all_info):
 
     last_state_value = len(all_info[0]) * [9999]
 
+
     for state_num, state_value in enumerate(all_info):
         skill_str += add_state(state_num, state_value, last_state_value)
 
@@ -99,4 +103,5 @@ if __name__ == '__main__':
     all_info = get_info(FILENAME)
     all_info = [all_info[i] for i in range(len(all_info)) if i % CIRCLE_INTERVAL == 0]
     plot(all_info, plot_joint)
+
     generate_skill(all_info[1:])
