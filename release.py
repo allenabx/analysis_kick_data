@@ -87,9 +87,7 @@ def str2float(strs):
     return temp
 
 def generate_skill(all_info):
-    skill_str = "STARTSKILL SKILL_KICK_LEFT_LEG\n" \
-                "# STATE 0\n" \
-                "STARTSTATE\n"
+    skill_str = "STARTSKILL SKILL_KICK_LEFT_LEG\n" 
     all_info = str2float(all_info)
     last_state_value = len(all_info[0]) * [9999]
 
